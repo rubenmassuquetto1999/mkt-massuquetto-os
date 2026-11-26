@@ -17,6 +17,7 @@ $logo = defined('LOGO_URL') ? LOGO_URL : 'https://i.postimg.cc/Vkhy4Y6x/1.png';
     <a href="financeiro.php" class="nav-link <?= $atual === 'financeiro.php' ? 'active' : '' ?>">💳 Financeiro</a>
     <a href="contrato.php" class="nav-link <?= $atual === 'contrato.php' ? 'active' : '' ?>">📄 Contrato</a>
     <a href="portal.php" class="nav-link <?= $atual === 'portal.php' ? 'active' : '' ?>">🌐 Portal</a>
+    <a href="configuracoes.php" class="nav-link <?= $atual === 'configuracoes.php' ? 'active' : '' ?>">⚙️ SMTP</a>
   </div>
   <div class="navbar-user">
     <span class="user-info">👤 <?= htmlspecialchars($_SESSION['usuario'] ?? 'Admin') ?></span>

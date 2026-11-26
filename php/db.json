@@ -360,6 +360,7 @@
     "admin_auth": {
         "email": "rubenmassuquetto1999@gmail.com",
         "senha": "123456",
+        "pin_seguranca": "1999",
         "reset_token": "",
         "reset_expires": 0
     }

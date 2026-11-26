@@ -10,21 +10,17 @@ $logo = LOGO_URL;
 $erro = '';
 $sucesso = '';
 $acao = $_GET['acao'] ?? 'login';
-$token_url = trim($_GET['token'] ?? '');
 
 $dados_db = ler_json('db.json');
 if (!isset($dados_db['admin_auth'])) {
-  $dados_db['admin_auth'] = ['email' => 'rubenmassuquetto1999@gmail.com', 'senha' => '123456', 'reset_token' => '', 'reset_expires' => 0];
+  $dados_db['admin_auth'] = ['email' => 'rubenmassuquetto1999@gmail.com', 'senha' => '123456', 'pin_seguranca' => '1999', 'reset_token' => '', 'reset_expires' => 0];
   salvar_json('db.json', $dados_db);
 }
 $auth = $dados_db['admin_auth'];
-
-// Se acessou via link de token, valida se é o token de redefinição
-if ($acao === 'redefinir' && $token_url !== '') {
-  if (empty($auth['reset_token']) || $auth['reset_token'] !== $token_url || time() > intval($auth['reset_expires'] ?? 0)) {
-    $erro = 'Link de recuperação inválido ou expirado. Solicite um novo link.';
-    $acao = 'esqueceu';
-  }
+if (!isset($auth['pin_seguranca'])) {
+  $auth['pin_seguranca'] = '1999';
+  $dados_db['admin_auth'] = $auth;
+  salvar_json('db.json', $dados_db);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -44,79 +40,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
       $erro = 'Credenciais de acesso inválidas.';
     }
-  } elseif ($form_tipo === 'recuperar') {
+  } elseif ($form_tipo === 'verificar_pin') {
     $email_input = strtolower(trim($_POST['email'] ?? ''));
-    
-    // Proteção contra enumeração: sempre exibe mensagem neutra, mas gera e envia o token apenas se for o e-mail master correto
-    if ($email_input === strtolower($auth['email'])) {
-      $token = bin2hex(random_bytes(32));
-      $expires = time() + 3600; // Expira em 1 hora
-      
-      $dados_db['admin_auth']['reset_token'] = $token;
-      $dados_db['admin_auth']['reset_expires'] = $expires;
-      salvar_json('db.json', $dados_db);
+    $pin_input = trim($_POST['pin'] ?? '');
 
-      $protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-      $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-      $link_reset = $protocolo . $host . dirname($_SERVER['PHP_SELF']) . '/login.php?acao=redefinir&token=' . $token;
-
-      $assunto = '[MKT Massuquetto OS] — Link Seguro de Redefinição de Senha';
-      $mensagem = "====================================================\n"
-                . "               MKT MASSUQUETTO OS                   \n"
-                . "       Gestão de Agência & CRM • Campo Largo - PR   \n"
-                . "====================================================\n\n"
-                . "Prezado Ruben Massuquetto,\n\n"
-                . "Recebemos uma solicitação para redefinir a senha de acesso ao seu painel administrativo.\n\n"
-                . "Para cadastrar uma nova senha, acesse o link seguro abaixo (válido por 1 hora):\n"
-                . "{$link_reset}\n\n"
-                . "Se você não solicitou a alteração, ignore esta mensagem.\n\n"
-                . "Atenciosamente,\n"
-                . "Equipe de Segurança MKT Massuquetto OS\n"
-                . "====================================================";
-      
-      $cabecalhos = "From: seguranca@mktmassuquetto.com\r\nReply-To: rubenmassuquetto1999@gmail.com\r\nX-Mailer: PHP/" . phpversion();
-      
-      @mail($auth['email'], $assunto, $mensagem, $cabecalhos);
-
-      // Log de auditoria
-      if (!isset($dados_db['recuperacoes'])) $dados_db['recuperacoes'] = [];
-      $dados_db['recuperacoes'][] = [
-        'id' => gerar_id(),
-        'email' => $auth['email'],
-        'data' => date('Y-m-d H:i:s'),
-        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-        'status' => 'Token de Recuperação Gerado e E-mail Disparado'
-      ];
-      salvar_json('db.json', $dados_db);
-    }
-    
-    // Mensagem anti-enumeração profissional
-    $sucesso = '✅ Se o e-mail informado estiver cadastrado na base administrativa master, um link seguro de redefinição de senha foi enviado para <strong>' . htmlspecialchars($email_input) . '</strong>. Verifique sua caixa de entrada.';
-    $acao = 'esqueceu_enviado';
-  } elseif ($form_tipo === 'atualizar_senha') {
-    $token_post = trim($_POST['token'] ?? '');
-    $nova_senha = trim($_POST['nova_senha'] ?? '');
-    $confirma_senha = trim($_POST['confirma_senha'] ?? '');
-
-    if (empty($auth['reset_token']) || $auth['reset_token'] !== $token_post || time() > intval($auth['reset_expires'] ?? 0)) {
-      $erro = 'Link de recuperação inválido ou expirado.';
-      $acao = 'esqueceu';
-    } elseif (strlen($nova_senha) < 6) {
-      $erro = 'A nova senha deve ter no mínimo 6 caracteres.';
+    if ($email_input === strtolower($auth['email']) && $pin_input === $auth['pin_seguranca']) {
+      // PIN válido, avança para definir nova senha com token de sessão temporário
+      $_SESSION['reset_autenticado'] = true;
       $acao = 'redefinir';
-      $token_url = $token_post;
-    } elseif ($nova_senha !== $confirma_senha) {
-      $erro = 'As senhas não coincidem.';
-      $acao = 'redefinir';
-      $token_url = $token_post;
     } else {
-      $dados_db['admin_auth']['senha'] = $nova_senha;
-      $dados_db['admin_auth']['reset_token'] = '';
-      $dados_db['admin_auth']['reset_expires'] = 0;
-      salvar_json('db.json', $dados_db);
+      $erro = 'E-mail ou PIN de Segurança incorretos.';
+      $acao = 'esqueceu';
+    }
+  } elseif ($form_tipo === 'atualizar_senha') {
+    if (empty($_SESSION['reset_autenticado'])) {
+      $erro = 'Sessão de redefinição expirada. Inicie novamente.';
+      $acao = 'esqueceu';
+    } else {
+      $nova_senha = trim($_POST['nova_senha'] ?? '');
+      $confirma_senha = trim($_POST['confirma_senha'] ?? '');
 
-      $sucesso = '✅ Senha redefinida com sucesso! Faça login com sua nova senha.';
-      $acao = 'login';
+      if (strlen($nova_senha) < 6) {
+        $erro = 'A nova senha deve ter no mínimo 6 caracteres.';
+        $acao = 'redefinir';
+      } elseif ($nova_senha !== $confirma_senha) {
+        $erro = 'As senhas não coincidem.';
+        $acao = 'redefinir';
+      } else {
+        $dados_db['admin_auth']['senha'] = $nova_senha;
+        salvar_json('db.json', $dados_db);
+        unset($_SESSION['reset_autenticado']);
+        $sucesso = '✅ Senha redefinida com sucesso! Faça login com sua nova senha.';
+        $acao = 'login';
+      }
     }
   }
 }
@@ -212,7 +168,7 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
       <img src="<?= htmlspecialchars($logo) ?>" alt="MKT Massuquetto">
       <div>
         <h2><?= $acao === 'esqueceu' ? 'Recuperação Segura' : ($acao === 'redefinir' ? 'Nova Senha' : 'Entrar no Painel') ?></h2>
-        <p><?= $acao === 'esqueceu' ? 'Insira seu e-mail cadastrado' : ($acao === 'redefinir' ? 'Cadastre sua nova senha' : 'Acesso administrativo MKT Massuquetto') ?></p>
+        <p><?= $acao === 'esqueceu' ? 'Confirmação por PIN Secreto' : ($acao === 'redefinir' ? 'Cadastre sua nova senha' : 'Acesso administrativo MKT Massuquetto') ?></p>
       </div>
     </div>
 
@@ -226,21 +182,27 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
 
     <?php if($acao === 'esqueceu'): ?>
     <form method="POST" action="login.php?acao=esqueceu">
-      <input type="hidden" name="form_tipo" value="recuperar">
+      <input type="hidden" name="form_tipo" value="verificar_pin">
       <div class="form-group">
-        <label>E-mail Cadastrado</label>
-        <input type="email" name="email" placeholder="seu@email.com" required autocomplete="email">
+        <label>E-mail Master</label>
+        <input type="email" name="email" placeholder="rubenmassuquetto1999@gmail.com" required autocomplete="email">
       </div>
-      <button type="submit" class="btn-login">Enviar Link de Recuperação</button>
+      <div class="form-group">
+        <label>PIN Secreto de Segurança</label>
+        <input type="password" name="pin" placeholder="•••• (Padrão: 1999)" required autocomplete="off">
+      </div>
+      <button type="submit" class="btn-login">Verificar &amp; Redefinir Senha</button>
       <div class="login-links" style="margin-top:16px;justify-content:center;">
         <a href="login.php">← Voltar para o Login</a>
       </div>
     </form>
+    <div style="margin-top:14px;font-size:.78rem;color:#888;text-align:center;">
+      🔒 <em>Por segurança contra bloqueios de SMTP em nuvem, a recuperação utiliza PIN secreto master (Padrão: 1999).</em>
+    </div>
 
     <?php elseif($acao === 'redefinir'): ?>
-    <form method="POST" action="login.php?acao=redefinir&token=<?= htmlspecialchars($token_url) ?>">
+    <form method="POST" action="login.php?acao=redefinir">
       <input type="hidden" name="form_tipo" value="atualizar_senha">
-      <input type="hidden" name="token" value="<?= htmlspecialchars($token_url) ?>">
       <div class="form-group">
         <label>Nova Senha (mín. 6 caracteres)</label>
         <input type="password" name="nova_senha" placeholder="••••••" required autocomplete="new-password">

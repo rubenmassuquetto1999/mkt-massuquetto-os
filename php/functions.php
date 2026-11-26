@@ -244,3 +244,78 @@ function servicos_comerciais(array $dados): array {
 function lista_nomes_servicos(): array {
   return array_keys(catalogo_servicos());
 }
+
+function enviar_email_smtp(string $para, string $assunto, string $mensagem): bool {
+  $dados = ler_json('db.json');
+  $smtp = $dados['smtp'] ?? [];
+  $host = trim($smtp['host'] ?? '');
+  $port = intval($smtp['port'] ?? 587);
+  $user = trim($smtp['user'] ?? '');
+  $pass = trim($smtp['pass'] ?? '');
+  $from = trim($smtp['from'] ?? 'rubenmassuquetto1999@gmail.com');
+
+  if (empty($host) || empty($user) || empty($pass)) {
+    $headers = "From: {$from}\r\nReply-To: {$from}\r\nContent-Type: text/plain; charset=UTF-8\r\n";
+    return @mail($para, $assunto, $mensagem, $headers);
+  }
+
+  $socket = @fsockopen(($port == 465 ? 'ssl://' : '') . $host, $port, $errno, $errstr, 15);
+  if (!$socket) {
+    $headers = "From: {$from}\r\nReply-To: {$from}\r\nContent-Type: text/plain; charset=UTF-8\r\n";
+    return @mail($para, $assunto, $mensagem, $headers);
+  }
+
+  $get_response = function($socket) {
+    $data = "";
+    while ($str = fgets($socket, 515)) {
+      $data .= $str;
+      if (substr($str, 3, 1) === " ") break;
+    }
+    return $data;
+  };
+
+  $get_response($socket);
+  fputs($socket, "EHLO " . ($_SERVER['HTTP_HOST'] ?? 'localhost') . "\r\n");
+  $get_response($socket);
+
+  if ($port == 587) {
+    fputs($socket, "STARTTLS\r\n");
+    $get_response($socket);
+    @stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+    fputs($socket, "EHLO " . ($_SERVER['HTTP_HOST'] ?? 'localhost') . "\r\n");
+    $get_response($socket);
+  }
+
+  fputs($socket, "AUTH LOGIN\r\n");
+  $get_response($socket);
+  fputs($socket, base64_encode($user) . "\r\n");
+  $get_response($socket);
+  fputs($socket, base64_encode($pass) . "\r\n");
+  $res = $get_response($socket);
+
+  if (strpos($res, '235') === false) {
+    fclose($socket);
+    $headers = "From: {$from}\r\nReply-To: {$from}\r\nContent-Type: text/plain; charset=UTF-8\r\n";
+    return @mail($para, $assunto, $mensagem, $headers);
+  }
+
+  fputs($socket, "MAIL FROM: <{$user}>\r\n");
+  $get_response($socket);
+  fputs($socket, "RCPT TO: <{$para}>\r\n");
+  $get_response($socket);
+  fputs($socket, "DATA\r\n");
+  $get_response($socket);
+
+  $email_content = "From: MKT Massuquetto <{$user}>\r\n"
+                 . "To: <{$para}>\r\n"
+                 . "Subject: =?UTF-8?B?" . base64_encode($assunto) . "?=\r\n"
+                 . "MIME-Version: 1.0\r\n"
+                 . "Content-Type: text/plain; charset=UTF-8\r\n\r\n"
+                 . $mensagem . "\r\n.\r\n";
+
+  fputs($socket, $email_content);
+  $get_response($socket);
+  fputs($socket, "QUIT\r\n");
+  fclose($socket);
+  return true;
+}
