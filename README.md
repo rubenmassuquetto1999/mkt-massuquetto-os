@@ -2,7 +2,14 @@
 
 Plataforma oficial da agência **MKT Massuquetto** para operação integrada de Sites de Alta Conversão, Tráfego Pago (Google Ads & Meta Ads), SEO Local, Branding e Atendimento.
 
-## 🚀 Funcionalidades Principais
+## 🔒 Acesso & Segurança
+
+- **Usuário Master**: `rubenmassuquetto1999@gmail.com`
+- **Senha Padrão**: `123456` (configurável internamente após login)
+- **Recuperação de Acesso**: Fluxo seguro de "Esqueceu a senha?" com validação de e-mail master e envio automático de requisição para o administrador.
+- **Proteção de Dados**: Bloqueio de acesso direto via HTTP e `.htaccess` aos arquivos JSON de persistência (`db.json`).
+
+## 🚀 Módulos do Sistema
 
 1. **Painel Geral (Dashboard)**: Indicadores de faturamento, lucro líquido (descontando freelancers), leads ativos e projetos em andamento, além de alertas de uptime e cobranças a vencer.
 2. **CRM de Leads & Interessados**: Cadastro, urgência, valor estimado, filtro por etapa, link direto para WhatsApp e conversão instantânea de lead em projeto/cliente.

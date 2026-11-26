@@ -20,12 +20,12 @@ $auth = $dados_db['admin_auth'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $form_tipo = $_POST['form_tipo'] ?? 'login';
-  
+  $email_input = strtolower(trim($_POST['email'] ?? ''));
+
   if ($form_tipo === 'login') {
-    $email = strtolower(trim($_POST['email'] ?? ''));
     $senha = trim($_POST['senha'] ?? '');
     
-    if ($email === strtolower($auth['email']) && $senha === $auth['senha']) {
+    if ($email_input === strtolower($auth['email']) && $senha === $auth['senha']) {
       $_SESSION['logado'] = true;
       $_SESSION['usuario'] = 'Ruben Massuquetto';
       session_write_close();
@@ -35,29 +35,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $erro = 'E-mail ou senha incorretos.';
     }
   } elseif ($form_tipo === 'recuperar') {
-    $email_rec = strtolower(trim($_POST['email'] ?? ''));
-    if ($email_rec === strtolower($auth['email'])) {
-      // Envia requisição de acesso / recuperação para o e-mail solicitado
+    if ($email_input === strtolower($auth['email'])) {
       $assunto = 'Solicitação de Acesso / Recuperação — Massuquetto OS';
-      $mensagem = "Olá Ruben,\n\nRecebemos uma solicitação de recuperação de acesso para o Massuquetto OS.\nSua senha atual de acesso é: {$auth['senha']}\n\nCaso não tenha solicitado, ignore esta mensagem.\n\nAtenciosamente,\nMKT Massuquetto OS";
+      $mensagem = "Olá Ruben,\n\nRecebemos uma solicitação de recuperação de acesso para o Massuquetto OS.\nSua senha atual de acesso é: {$auth['senha']}\n\nAtenciosamente,\nMKT Massuquetto OS";
       $cabecalhos = "From: no-reply@mktmassuquetto.com\r\nReply-To: rubenmassuquetto1999@gmail.com\r\n";
       
       @mail($auth['email'], $assunto, $mensagem, $cabecalhos);
       
-      $sucesso = 'Instruções e dados de acesso enviados com sucesso para ' . htmlspecialchars($auth['email']) . '! Verifique sua caixa de entrada.';
+      $sucesso = 'Requisição de acesso enviada com sucesso para o e-mail cadastrado. Verifique sua caixa de entrada.';
     } else {
-      $erro = 'E-mail não cadastrado como administrador master.';
-    }
-  } elseif ($form_tipo === 'redefinir') {
-    $nova_senha = trim($_POST['nova_senha'] ?? '');
-    if (strlen($nova_senha) >= 4) {
-      $dados_db['admin_auth']['senha'] = $nova_senha;
-      salvar_json('db.json', $dados_db);
-      $sucesso = 'Senha alterada com sucesso! Faça login com a nova senha.';
-      $acao = 'login';
-    } else {
-      $erro = 'A nova senha deve ter pelo menos 4 caracteres.';
-      $acao = 'redefinir';
+      $erro = 'E-mail não encontrado na base de dados.';
     }
   }
 }
@@ -129,7 +116,7 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
 .btn-login:hover{opacity:.9;transform:translateY(-1px);}
 .erro{background:rgba(255,91,91,.14);border:1px solid rgba(255,91,91,.4);color:#ff7b7b;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-bottom:16px;}
 .sucesso{background:rgba(0,231,193,.14);border:1px solid rgba(0,231,193,.4);color:#00E7C1;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-bottom:16px;line-height:1.4;}
-.login-links{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:.82rem;}
+.login-links{display:flex;justify-content:flex-end;align-items:center;margin-top:12px;font-size:.82ns;font-size:.82rem;}
 .login-links a{color:#00E7C1;text-decoration:none;}
 .login-links a:hover{text-decoration:underline;}
 .dev{text-align:center;margin-top:22px;font-size:.72rem;color:#666;}
@@ -152,13 +139,13 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
     <div class="login-box-head">
       <img src="<?= htmlspecialchars($logo) ?>" alt="MKT Massuquetto">
       <div>
-        <h2><?= $acao === 'esqueceu' ? 'Recuperar Acesso' : ($acao === 'redefinir' ? 'Nova Senha' : 'Entrar no Painel') ?></h2>
-        <p><?= $acao === 'esqueceu' ? 'Envio para rubenmassuquetto1999@gmail.com' : ($acao === 'redefinir' ? 'Defina sua nova senha' : 'Acesso administrativo MKT Massuquetto') ?></p>
+        <h2><?= $acao === 'esqueceu' ? 'Recuperar Acesso' : 'Entrar no Painel' ?></h2>
+        <p><?= $acao === 'esqueceu' ? 'Informe seu e-mail cadastrado' : 'Acesso administrativo MKT Massuquetto' ?></p>
       </div>
     </div>
 
     <?php if($erro): ?>
-    <div class="erro">❌ <?= htmlspecialchars($erro) ?></div>
+    <div class="erro"><?= htmlspecialchars($erro) ?></div>
     <?php endif; ?>
 
     <?php if($sucesso): ?>
@@ -169,26 +156,10 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
     <form method="POST" action="login.php?acao=esqueceu">
       <input type="hidden" name="form_tipo" value="recuperar">
       <div class="form-group">
-        <label>E-mail Master</label>
-        <input type="email" name="email" placeholder="rubenmassuquetto1999@gmail.com" value="<?= htmlspecialchars($auth['email']) ?>" required autocomplete="email">
+        <label>E-mail</label>
+        <input type="email" name="email" placeholder="seu@email.com" required autocomplete="email">
       </div>
       <button type="submit" class="btn-login">Enviar Requisição de Acesso</button>
-      <div class="login-links" style="margin-top:16px;justify-content:center;">
-        <a href="login.php">← Voltar para o Login</a>
-      </div>
-    </form>
-    <div style="margin-top:16px;font-size:.8rem;color:#9a9a9a;text-align:center;">
-      Deseja alterar a senha diretamente? <a href="login.php?acao=redefinir" style="color:#00E7C1;">Redefinir agora</a>
-    </div>
-
-    <?php elseif($acao === 'redefinir'): ?>
-    <form method="POST" action="login.php?acao=redefinir">
-      <input type="hidden" name="form_tipo" value="redefinir">
-      <div class="form-group">
-        <label>Nova Senha</label>
-        <input type="password" name="nova_senha" placeholder="Digite a nova senha" required autocomplete="new-password">
-      </div>
-      <button type="submit" class="btn-login" style="background:#6C3AE3;color:#fff;">Salvar Nova Senha</button>
       <div class="login-links" style="margin-top:16px;justify-content:center;">
         <a href="login.php">← Voltar para o Login</a>
       </div>
@@ -199,7 +170,7 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
       <input type="hidden" name="form_tipo" value="login">
       <div class="form-group">
         <label>E-mail de acesso</label>
-        <input type="email" name="email" placeholder="rubenmassuquetto1999@gmail.com" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required autocomplete="username">
+        <input type="email" name="email" placeholder="seu@email.com" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required autocomplete="username">
       </div>
       <div class="form-group">
         <label>Senha</label>
@@ -208,7 +179,6 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
       <button type="submit" class="btn-login">Entrar na MKT Massuquetto</button>
       <div class="login-links">
         <a href="login.php?acao=esqueceu">Esqueceu a senha?</a>
-        <a href="login.php?acao=redefinir">Redefinir Senha</a>
       </div>
     </form>
     <?php endif; ?>
