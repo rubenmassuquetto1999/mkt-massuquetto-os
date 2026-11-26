@@ -10,72 +10,113 @@ $logo = LOGO_URL;
 $erro = '';
 $sucesso = '';
 $acao = $_GET['acao'] ?? 'login';
+$token_url = trim($_GET['token'] ?? '');
 
 $dados_db = ler_json('db.json');
 if (!isset($dados_db['admin_auth'])) {
-  $dados_db['admin_auth'] = ['email' => 'rubenmassuquetto1999@gmail.com', 'senha' => '123456'];
+  $dados_db['admin_auth'] = ['email' => 'rubenmassuquetto1999@gmail.com', 'senha' => '123456', 'reset_token' => '', 'reset_expires' => 0];
   salvar_json('db.json', $dados_db);
 }
 $auth = $dados_db['admin_auth'];
 
+// Se acessou via link de token, valida se é o token de redefinição
+if ($acao === 'redefinir' && $token_url !== '') {
+  if (empty($auth['reset_token']) || $auth['reset_token'] !== $token_url || time() > intval($auth['reset_expires'] ?? 0)) {
+    $erro = 'Link de recuperação inválido ou expirado. Solicite um novo link.';
+    $acao = 'esqueceu';
+  }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $form_tipo = $_POST['form_tipo'] ?? 'login';
-  $email_input = strtolower(trim($_POST['email'] ?? ''));
 
   if ($form_tipo === 'login') {
+    $email_input = strtolower(trim($_POST['email'] ?? ''));
     $senha = trim($_POST['senha'] ?? '');
     
-    // Autenticação segura em produção
     if ($email_input === strtolower($auth['email']) && $senha === $auth['senha']) {
-      session_regenerate_id(true); // Proteção contra fixation attack
+      session_regenerate_id(true);
       $_SESSION['logado'] = true;
       $_SESSION['usuario'] = 'Ruben Massuquetto';
       session_write_close();
       header('Location: index.php');
       exit;
     } else {
-      // Mensagem genérica para evitar enumeração de contas
       $erro = 'Credenciais de acesso inválidas.';
     }
   } elseif ($form_tipo === 'recuperar') {
+    $email_input = strtolower(trim($_POST['email'] ?? ''));
+    
+    // Proteção contra enumeração: sempre exibe mensagem neutra, mas gera e envia o token apenas se for o e-mail master correto
     if ($email_input === strtolower($auth['email'])) {
-      $assunto = '[MKT Massuquetto OS — Produção] — Recuperação de Acesso Administrativo';
+      $token = bin2hex(random_bytes(32));
+      $expires = time() + 3600; // Expira em 1 hora
+      
+      $dados_db['admin_auth']['reset_token'] = $token;
+      $dados_db['admin_auth']['reset_expires'] = $expires;
+      salvar_json('db.json', $dados_db);
+
+      $protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+      $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+      $link_reset = $protocolo . $host . dirname($_SERVER['PHP_SELF']) . '/login.php?acao=redefinir&token=' . $token;
+
+      $assunto = '[MKT Massuquetto OS] — Link Seguro de Redefinição de Senha';
       $mensagem = "====================================================\n"
-                . "               MKT MASSUQUETTO OS (PRODUÇÃO)        \n"
+                . "               MKT MASSUQUETTO OS                   \n"
                 . "       Gestão de Agência & CRM • Campo Largo - PR   \n"
                 . "====================================================\n\n"
                 . "Prezado Ruben Massuquetto,\n\n"
-                . "Identificamos uma solicitação de recuperação de credenciais para o ambiente de produção da MKT Massuquetto OS.\n\n"
-                . "Para preservar a segurança corporativa, suas credenciais de acesso master:\n"
-                . "• E-mail: {$auth['email']}\n"
-                . "• Senha Atual: {$auth['senha']}\n\n"
-                . "Data/Hora da Solicitação: " . date('d/m/Y H:i:s') . "\n"
-                . "Endereço IP de origem: " . ($_SERVER['REMOTE_ADDR'] ?? 'Seguro') . "\n\n"
-                . "Se você não realizou esta solicitação, contate o administrador do sistema imediatamente.\n\n"
+                . "Recebemos uma solicitação para redefinir a senha de acesso ao seu painel administrativo.\n\n"
+                . "Para cadastrar uma nova senha, acesse o link seguro abaixo (válido por 1 hora):\n"
+                . "{$link_reset}\n\n"
+                . "Se você não solicitou a alteração, ignore esta mensagem.\n\n"
                 . "Atenciosamente,\n"
-                . "Serviço de Segurança MKT Massuquetto OS\n"
+                . "Equipe de Segurança MKT Massuquetto OS\n"
                 . "====================================================";
       
       $cabecalhos = "From: seguranca@mktmassuquetto.com\r\nReply-To: rubenmassuquetto1999@gmail.com\r\nX-Mailer: PHP/" . phpversion();
       
       @mail($auth['email'], $assunto, $mensagem, $cabecalhos);
 
-      // Log de auditoria em produção
+      // Log de auditoria
       if (!isset($dados_db['recuperacoes'])) $dados_db['recuperacoes'] = [];
       $dados_db['recuperacoes'][] = [
         'id' => gerar_id(),
         'email' => $auth['email'],
         'data' => date('Y-m-d H:i:s'),
         'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-        'status' => 'E-mail de Produção Branded Disparado'
+        'status' => 'Token de Recuperação Gerado e E-mail Disparado'
       ];
       salvar_json('db.json', $dados_db);
-      
-      // PRODUÇÃO: Nunca exibe a senha em texto na tela. Envia estritamente por e-mail seguro.
-      $sucesso = '✅ Solicitação processada com sucesso. As instruções e credenciais de acesso foram enviadas com segurança para <strong>' . htmlspecialchars($auth['email']) . '</strong>. Verifique sua caixa de entrada.';
+    }
+    
+    // Mensagem anti-enumeração profissional
+    $sucesso = '✅ Se o e-mail informado estiver cadastrado na base administrativa master, um link seguro de redefinição de senha foi enviado para <strong>' . htmlspecialchars($email_input) . '</strong>. Verifique sua caixa de entrada.';
+    $acao = 'esqueceu_enviado';
+  } elseif ($form_tipo === 'atualizar_senha') {
+    $token_post = trim($_POST['token'] ?? '');
+    $nova_senha = trim($_POST['nova_senha'] ?? '');
+    $confirma_senha = trim($_POST['confirma_senha'] ?? '');
+
+    if (empty($auth['reset_token']) || $auth['reset_token'] !== $token_post || time() > intval($auth['reset_expires'] ?? 0)) {
+      $erro = 'Link de recuperação inválido ou expirado.';
+      $acao = 'esqueceu';
+    } elseif (strlen($nova_senha) < 6) {
+      $erro = 'A nova senha deve ter no mínimo 6 caracteres.';
+      $acao = 'redefinir';
+      $token_url = $token_post;
+    } elseif ($nova_senha !== $confirma_senha) {
+      $erro = 'As senhas não coincidem.';
+      $acao = 'redefinir';
+      $token_url = $token_post;
     } else {
-      // Resposta genérica de segurança para e-mails não cadastrados
-      $sucesso = '✅ Se o e-mail informado estiver cadastrado na base master, as instruções de acesso foram enviadas.';
+      $dados_db['admin_auth']['senha'] = $nova_senha;
+      $dados_db['admin_auth']['reset_token'] = '';
+      $dados_db['admin_auth']['reset_expires'] = 0;
+      salvar_json('db.json', $dados_db);
+
+      $sucesso = '✅ Senha redefinida com sucesso! Faça login com sua nova senha.';
+      $acao = 'login';
     }
   }
 }
@@ -85,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MKT Massuquetto — Acesso de Produção</title>
+<title>MKT Massuquetto — Acesso Seguro</title>
 <link rel="icon" type="image/png" href="<?= htmlspecialchars($logo) ?>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -162,7 +203,7 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
 <body>
 <div class="col-left">
   <img src="<?= htmlspecialchars($logo) ?>" alt="Logo MKT Massuquetto" class="login-logo">
-  <p class="brand-tagline">Gestão de Agência &amp; CRM (Produção)</p>
+  <p class="brand-tagline">Gestão de Agência &amp; CRM</p>
 </div>
 
 <div class="col-right">
@@ -170,8 +211,8 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
     <div class="login-box-head">
       <img src="<?= htmlspecialchars($logo) ?>" alt="MKT Massuquetto">
       <div>
-        <h2><?= $acao === 'esqueceu' ? 'Recuperação Segura' : 'Entrar no Painel' ?></h2>
-        <p><?= $acao === 'esqueceu' ? 'Ambiente de Produção' : 'Acesso restrito autorizado' ?></p>
+        <h2><?= $acao === 'esqueceu' ? 'Recuperação Segura' : ($acao === 'redefinir' ? 'Nova Senha' : 'Entrar no Painel') ?></h2>
+        <p><?= $acao === 'esqueceu' ? 'Insira seu e-mail cadastrado' : ($acao === 'redefinir' ? 'Cadastre sua nova senha' : 'Acesso administrativo MKT Massuquetto') ?></p>
       </div>
     </div>
 
@@ -190,7 +231,25 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
         <label>E-mail Cadastrado</label>
         <input type="email" name="email" placeholder="seu@email.com" required autocomplete="email">
       </div>
-      <button type="submit" class="btn-login">Enviar Instruções de Acesso</button>
+      <button type="submit" class="btn-login">Enviar Link de Recuperação</button>
+      <div class="login-links" style="margin-top:16px;justify-content:center;">
+        <a href="login.php">← Voltar para o Login</a>
+      </div>
+    </form>
+
+    <?php elseif($acao === 'redefinir'): ?>
+    <form method="POST" action="login.php?acao=redefinir&token=<?= htmlspecialchars($token_url) ?>">
+      <input type="hidden" name="form_tipo" value="atualizar_senha">
+      <input type="hidden" name="token" value="<?= htmlspecialchars($token_url) ?>">
+      <div class="form-group">
+        <label>Nova Senha (mín. 6 caracteres)</label>
+        <input type="password" name="nova_senha" placeholder="••••••" required autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>Confirme a Nova Senha</label>
+        <input type="password" name="confirma_senha" placeholder="••••••" required autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn-login" style="background:#6C3AE3;color:#fff;">Salvar Nova Senha</button>
       <div class="login-links" style="margin-top:16px;justify-content:center;">
         <a href="login.php">← Voltar para o Login</a>
       </div>
@@ -214,7 +273,7 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
     </form>
     <?php endif; ?>
 
-    <div class="dev">MKT Massuquetto • Produção Segura</div>
+    <div class="dev">MKT Massuquetto • Todos os direitos reservados</div>
   </div>
 </div>
 </body>
