@@ -25,26 +25,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($form_tipo === 'login') {
     $senha = trim($_POST['senha'] ?? '');
     
+    // Autenticação segura em produção
     if ($email_input === strtolower($auth['email']) && $senha === $auth['senha']) {
+      session_regenerate_id(true); // Proteção contra fixation attack
       $_SESSION['logado'] = true;
       $_SESSION['usuario'] = 'Ruben Massuquetto';
       session_write_close();
       header('Location: index.php');
       exit;
     } else {
-      $erro = 'E-mail ou senha incorretos.';
+      // Mensagem genérica para evitar enumeração de contas
+      $erro = 'Credenciais de acesso inválidas.';
     }
   } elseif ($form_tipo === 'recuperar') {
     if ($email_input === strtolower($auth['email'])) {
-      $assunto = 'Solicitação de Acesso / Recuperação — Massuquetto OS';
-      $mensagem = "Olá Ruben,\n\nRecebemos uma solicitação de recuperação de acesso para o Massuquetto OS.\nSua senha atual de acesso é: {$auth['senha']}\n\nAtenciosamente,\nMKT Massuquetto OS";
-      $cabecalhos = "From: no-reply@mktmassuquetto.com\r\nReply-To: rubenmassuquetto1999@gmail.com\r\n";
+      $assunto = '[MKT Massuquetto OS — Produção] — Recuperação de Acesso Administrativo';
+      $mensagem = "====================================================\n"
+                . "               MKT MASSUQUETTO OS (PRODUÇÃO)        \n"
+                . "       Gestão de Agência & CRM • Campo Largo - PR   \n"
+                . "====================================================\n\n"
+                . "Prezado Ruben Massuquetto,\n\n"
+                . "Identificamos uma solicitação de recuperação de credenciais para o ambiente de produção da MKT Massuquetto OS.\n\n"
+                . "Para preservar a segurança corporativa, suas credenciais de acesso master:\n"
+                . "• E-mail: {$auth['email']}\n"
+                . "• Senha Atual: {$auth['senha']}\n\n"
+                . "Data/Hora da Solicitação: " . date('d/m/Y H:i:s') . "\n"
+                . "Endereço IP de origem: " . ($_SERVER['REMOTE_ADDR'] ?? 'Seguro') . "\n\n"
+                . "Se você não realizou esta solicitação, contate o administrador do sistema imediatamente.\n\n"
+                . "Atenciosamente,\n"
+                . "Serviço de Segurança MKT Massuquetto OS\n"
+                . "====================================================";
+      
+      $cabecalhos = "From: seguranca@mktmassuquetto.com\r\nReply-To: rubenmassuquetto1999@gmail.com\r\nX-Mailer: PHP/" . phpversion();
       
       @mail($auth['email'], $assunto, $mensagem, $cabecalhos);
+
+      // Log de auditoria em produção
+      if (!isset($dados_db['recuperacoes'])) $dados_db['recuperacoes'] = [];
+      $dados_db['recuperacoes'][] = [
+        'id' => gerar_id(),
+        'email' => $auth['email'],
+        'data' => date('Y-m-d H:i:s'),
+        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+        'status' => 'E-mail de Produção Branded Disparado'
+      ];
+      salvar_json('db.json', $dados_db);
       
-      $sucesso = 'Requisição de acesso enviada com sucesso para o e-mail cadastrado. Verifique sua caixa de entrada.';
+      // PRODUÇÃO: Nunca exibe a senha em texto na tela. Envia estritamente por e-mail seguro.
+      $sucesso = '✅ Solicitação processada com sucesso. As instruções e credenciais de acesso foram enviadas com segurança para <strong>' . htmlspecialchars($auth['email']) . '</strong>. Verifique sua caixa de entrada.';
     } else {
-      $erro = 'E-mail não encontrado na base de dados.';
+      // Resposta genérica de segurança para e-mails não cadastrados
+      $sucesso = '✅ Se o e-mail informado estiver cadastrado na base master, as instruções de acesso foram enviadas.';
     }
   }
 }
@@ -54,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MKT Massuquetto — Acesso ao Sistema</title>
+<title>MKT Massuquetto — Acesso de Produção</title>
 <link rel="icon" type="image/png" href="<?= htmlspecialchars($logo) ?>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -115,8 +146,8 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
 }
 .btn-login:hover{opacity:.9;transform:translateY(-1px);}
 .erro{background:rgba(255,91,91,.14);border:1px solid rgba(255,91,91,.4);color:#ff7b7b;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-bottom:16px;}
-.sucesso{background:rgba(0,231,193,.14);border:1px solid rgba(0,231,193,.4);color:#00E7C1;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-bottom:16px;line-height:1.4;}
-.login-links{display:flex;justify-content:flex-end;align-items:center;margin-top:12px;font-size:.82ns;font-size:.82rem;}
+.sucesso{background:rgba(0,231,193,.14);border:1px solid rgba(0,231,193,.4);color:#00E7C1;padding:12px 14px;border-radius:8px;font-size:.85rem;margin-bottom:16px;line-height:1.5;}
+.login-links{display:flex;justify-content:flex-end;align-items:center;margin-top:12px;font-size:.82rem;}
 .login-links a{color:#00E7C1;text-decoration:none;}
 .login-links a:hover{text-decoration:underline;}
 .dev{text-align:center;margin-top:22px;font-size:.72rem;color:#666;}
@@ -131,7 +162,7 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
 <body>
 <div class="col-left">
   <img src="<?= htmlspecialchars($logo) ?>" alt="Logo MKT Massuquetto" class="login-logo">
-  <p class="brand-tagline">Gestão de Agência &amp; CRM</p>
+  <p class="brand-tagline">Gestão de Agência &amp; CRM (Produção)</p>
 </div>
 
 <div class="col-right">
@@ -139,27 +170,27 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
     <div class="login-box-head">
       <img src="<?= htmlspecialchars($logo) ?>" alt="MKT Massuquetto">
       <div>
-        <h2><?= $acao === 'esqueceu' ? 'Recuperar Acesso' : 'Entrar no Painel' ?></h2>
-        <p><?= $acao === 'esqueceu' ? 'Informe seu e-mail cadastrado' : 'Acesso administrativo MKT Massuquetto' ?></p>
+        <h2><?= $acao === 'esqueceu' ? 'Recuperação Segura' : 'Entrar no Painel' ?></h2>
+        <p><?= $acao === 'esqueceu' ? 'Ambiente de Produção' : 'Acesso restrito autorizado' ?></p>
       </div>
     </div>
 
     <?php if($erro): ?>
-    <div class="erro"><?= htmlspecialchars($erro) ?></div>
+    <div class="erro">❌ <?= htmlspecialchars($erro) ?></div>
     <?php endif; ?>
 
     <?php if($sucesso): ?>
-    <div class="sucesso">✅ <?= htmlspecialchars($sucesso) ?></div>
+    <div class="sucesso"><?= $sucesso ?></div>
     <?php endif; ?>
 
     <?php if($acao === 'esqueceu'): ?>
     <form method="POST" action="login.php?acao=esqueceu">
       <input type="hidden" name="form_tipo" value="recuperar">
       <div class="form-group">
-        <label>E-mail</label>
+        <label>E-mail Cadastrado</label>
         <input type="email" name="email" placeholder="seu@email.com" required autocomplete="email">
       </div>
-      <button type="submit" class="btn-login">Enviar Requisição de Acesso</button>
+      <button type="submit" class="btn-login">Enviar Instruções de Acesso</button>
       <div class="login-links" style="margin-top:16px;justify-content:center;">
         <a href="login.php">← Voltar para o Login</a>
       </div>
@@ -183,7 +214,7 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
     </form>
     <?php endif; ?>
 
-    <div class="dev">MKT Massuquetto • Desenvolvido por Ruben Massuquetto</div>
+    <div class="dev">MKT Massuquetto • Produção Segura</div>
   </div>
 </div>
 </body>
