@@ -1,0 +1,6 @@
+{
+  "name": "Massuquetto OS",
+  "description": "Sistema de gestão completo em PHP para agência de marketing digital (Painel, CRM de Leads e Projetos).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

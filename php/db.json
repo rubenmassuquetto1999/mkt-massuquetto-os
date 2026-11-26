@@ -1,0 +1,364 @@
+{
+    "leads": [
+        {
+            "id": "lead001",
+            "nome": "Carlos Mendes",
+            "empresa": "Mendes Auto Peças",
+            "whatsapp": "11987654321",
+            "servico": "Gestão de Tráfego Pago",
+            "urgencia": "Alta",
+            "valor_estimado": 2500,
+            "observacoes": "Quer campanhas de Google Ads para aumentar vendas na oficina.",
+            "status": "Qualificado",
+            "venda_cliente": "Em Atendimento",
+            "criado_em": "2026-11-01 09:00:00"
+        },
+        {
+            "id": "lead002",
+            "nome": "Ana Souza",
+            "empresa": "Clínica Vida Plena",
+            "whatsapp": "21998877665",
+            "servico": "SEO Local \/ GMN",
+            "urgencia": "Alta",
+            "valor_estimado": 1800,
+            "observacoes": "Precisa dominar o Google Maps da região e aumentar chamadas.",
+            "status": "Proposta Enviada",
+            "venda_cliente": "Em Atendimento",
+            "criado_em": "2026-11-05 11:30:00"
+        },
+        {
+            "id": "lead003",
+            "nome": "Ricardo Falcão",
+            "empresa": "Studio Falcão Design",
+            "whatsapp": "11911223344",
+            "servico": "Branding & Visual",
+            "urgencia": "Média",
+            "valor_estimado": 4500,
+            "observacoes": "Rebranding completo com manual da marca e assets sociais.",
+            "status": "Novo",
+            "venda_cliente": "Em Atendimento",
+            "criado_em": "2026-11-08 14:00:00"
+        },
+        {
+            "id": "lead004",
+            "nome": "Fernanda Lima",
+            "empresa": "Lima Moda Fitness",
+            "whatsapp": "31977665544",
+            "servico": "Social Media & Content",
+            "urgencia": "Média",
+            "valor_estimado": 1200,
+            "observacoes": "Gestão mensal de Reels, roteiros e calendário editorial.",
+            "status": "Fechado",
+            "venda_cliente": "Vendido",
+            "criado_em": "2026-11-10 16:45:00"
+        },
+        {
+            "id": "lead005",
+            "nome": "Bruno Carvalho",
+            "empresa": "TechBruno Soluções",
+            "whatsapp": "41966554433",
+            "servico": "Sites & Landing Pages",
+            "urgencia": "Alta",
+            "valor_estimado": 3200,
+            "observacoes": "Landing page de alta conversão com Pixel e WhatsApp integrados.",
+            "status": "Qualificado",
+            "venda_cliente": "Em Atendimento",
+            "criado_em": "2026-11-12 10:15:00"
+        },
+        {
+            "id": "lead006",
+            "nome": "Juliana Castro",
+            "empresa": "Espaço Castro Estética",
+            "whatsapp": "11955443322",
+            "servico": "Gestão de Tráfego Pago",
+            "urgencia": "Baixa",
+            "valor_estimado": 2000,
+            "observacoes": "Interessada em Meta Ads com remarketing para procedimentos.",
+            "status": "Novo",
+            "venda_cliente": "Em Atendimento",
+            "criado_em": "2026-11-14 09:30:00"
+        }
+    ],
+    "projetos": [
+        {
+            "id": "proj001",
+            "cliente": "Lima Moda Fitness",
+            "servico": "Social Media & Content",
+            "prazo_entrega": "2026-11-15",
+            "freelancer": "Diego Santos",
+            "valor_cobrado": 1200,
+            "valor_freelancer": 400,
+            "lucro_liquido": 800,
+            "status": "Entregue",
+            "url_homologacao": "https:\/\/instagram.com",
+            "uptime_status": "Online \/ Rápido",
+            "aprovacao_cliente": "Aprovado",
+            "comentarios_cliente": "Calendário e identidade dos Reels aprovados!",
+            "criado_em": "2026-11-01 08:00:00"
+        },
+        {
+            "id": "proj002",
+            "cliente": "Clínica Vida Plena",
+            "servico": "SEO Local \/ GMN",
+            "prazo_entrega": "2026-11-25",
+            "freelancer": "Mariana Figueiredo",
+            "valor_cobrado": 1800,
+            "valor_freelancer": 600,
+            "lucro_liquido": 1200,
+            "status": "Desenvolvimento \/ Execução",
+            "url_homologacao": "https:\/\/maps.google.com",
+            "uptime_status": "Online \/ Rápido",
+            "aprovacao_cliente": "Em Análise",
+            "comentarios_cliente": "Aguardando fotos da fachada para subir no GMN.",
+            "criado_em": "2026-11-06 10:00:00"
+        },
+        {
+            "id": "proj003",
+            "cliente": "Mendes Auto Peças",
+            "servico": "Gestão de Tráfego Pago",
+            "prazo_entrega": "2026-11-20",
+            "freelancer": "Rafael Torres",
+            "valor_cobrado": 2500,
+            "valor_freelancer": 800,
+            "lucro_liquido": 1700,
+            "status": "Velocidade & Traqueamento",
+            "url_homologacao": "https:\/\/mendesautopecas.com.br",
+            "uptime_status": "Online \/ Rápido",
+            "aprovacao_cliente": "Em Análise",
+            "comentarios_cliente": "Conferindo disparo de eventos do Pixel no botão WhatsApp.",
+            "criado_em": "2026-11-02 14:00:00"
+        },
+        {
+            "id": "proj004",
+            "cliente": "TechBruno Soluções",
+            "servico": "Sites & Landing Pages",
+            "prazo_entrega": "2026-12-05",
+            "freelancer": "Amanda Oliveira",
+            "valor_cobrado": 3200,
+            "valor_freelancer": 1100,
+            "lucro_liquido": 2100,
+            "status": "Copywriting & UI\/UX",
+            "url_homologacao": "https:\/\/preview.mktmassuquetto.com\/techbruno",
+            "uptime_status": "Online \/ Rápido",
+            "aprovacao_cliente": "Ajustes Solicitados",
+            "comentarios_cliente": "Ajustar CTA principal acima da dobra para destacar teste grátis.",
+            "criado_em": "2026-11-12 09:00:00"
+        },
+        {
+            "id": "proj005",
+            "cliente": "Studio Falcão Design",
+            "servico": "Branding & Visual",
+            "prazo_entrega": "2026-11-30",
+            "freelancer": "Lucas Braga",
+            "valor_cobrado": 4500,
+            "valor_freelancer": 1500,
+            "lucro_liquido": 3000,
+            "status": "Revisão \/ Aprovação",
+            "url_homologacao": "https:\/\/preview.mktmassuquetto.com\/falcao-brand",
+            "uptime_status": "Online \/ Rápido",
+            "aprovacao_cliente": "Em Análise",
+            "comentarios_cliente": "Manual de marca pronto para revisão final do cliente.",
+            "criado_em": "2026-11-11 13:00:00"
+        }
+    ],
+    "financeiro": [
+        {
+            "id": "fin001",
+            "cliente": "Lima Moda Fitness",
+            "tipo": "Mensalidade Recorrente",
+            "valor": 1200,
+            "vencimento": "2026-11-10",
+            "status": "Pago",
+            "criado_em": "2026-11-01 08:30:00",
+            "pago_em": "2026-11-09 14:20:00"
+        },
+        {
+            "id": "fin002",
+            "cliente": "TechBruno Soluções",
+            "tipo": "Taxa de Setup Única",
+            "valor": 1500,
+            "vencimento": "2026-11-20",
+            "status": "Pendente",
+            "criado_em": "2026-11-10 10:00:00",
+            "pago_em": ""
+        },
+        {
+            "id": "fin003",
+            "cliente": "Mendes Auto Peças",
+            "tipo": "Mensalidade Recorrente",
+            "valor": 2500,
+            "vencimento": "2026-11-05",
+            "status": "Atrasado",
+            "criado_em": "2026-10-25 09:00:00",
+            "pago_em": ""
+        },
+        {
+            "id": "fin004",
+            "cliente": "Clínica Vida Plena",
+            "tipo": "Mensalidade Recorrente",
+            "valor": 1800,
+            "vencimento": "2026-11-25",
+            "status": "Pendente",
+            "criado_em": "2026-11-06 11:00:00",
+            "pago_em": ""
+        }
+    ],
+    "onboardings": [
+        {
+            "id": "onb001",
+            "cliente": "Mendes Auto Peças",
+            "servico": "Gestão de Tráfego Pago",
+            "respostas": {
+                "q1": "R$ 3.000,00\/mês divididos entre Google Ads e Meta Ads",
+                "q2": "Campo Largo e Região Metropolitana de Curitiba (raio 25km)",
+                "q3": "Ticket médio R$ 650,00 em revisões e peças"
+            },
+            "cofre": {
+                "google_ads_id": "482-910-3341",
+                "meta_bm": "BM Mendes Auto (ID 99128371)",
+                "hospedagem": "Hostinger — painel@mendesautopecas.com.br",
+                "dominio": "Registro.br (DNS apontado)",
+                "gmn": "Gerente adicionado: contato@mktmassuquetto.com"
+            },
+            "traqueamento": {
+                "pixel_meta": true,
+                "capi": true,
+                "gtm": true,
+                "ga4": true
+            },
+            "atualizado_em": "2026-11-12 15:10:00"
+        },
+        {
+            "id": "onb002",
+            "cliente": "TechBruno Soluções",
+            "servico": "Sites & Landing Pages",
+            "respostas": {
+                "q1": "Captura de leads qualificados para demonstração B2B",
+                "q2": "techbruno.com.br na Cloudflare + Hostinger",
+                "q3": "Linear.app e RD Station"
+            },
+            "cofre": {
+                "google_ads_id": "Pendente",
+                "meta_bm": "BM TechBruno (ID 55412098)",
+                "hospedagem": "Hostinger — acesso liberado via convite",
+                "dominio": "Cloudflare — DNS ativo",
+                "gmn": "Não aplicável"
+            },
+            "traqueamento": {
+                "pixel_meta": true,
+                "capi": false,
+                "gtm": true,
+                "ga4": false
+            },
+            "atualizado_em": "2026-11-14 11:00:00"
+        }
+    ],
+    "performance": [
+        {
+            "id": "perf001",
+            "cliente": "Mendes Auto Peças",
+            "plataforma": "Google Ads + Meta Ads",
+            "periodo": "2026-11",
+            "orcamento_teto": 3000,
+            "saldo_atual": 420,
+            "investido": 2450,
+            "leads_gerados": 98,
+            "vendas_fechadas": 21,
+            "receita_gerada": 13650,
+            "atualizado_em": "2026-11-15 18:00:00"
+        },
+        {
+            "id": "perf002",
+            "cliente": "Lima Moda Fitness",
+            "plataforma": "Meta Ads (Insta\/Face)",
+            "periodo": "2026-11",
+            "orcamento_teto": 1800,
+            "saldo_atual": 850,
+            "investido": 1100,
+            "leads_gerados": 64,
+            "vendas_fechadas": 18,
+            "receita_gerada": 5940,
+            "atualizado_em": "2026-11-15 17:30:00"
+        },
+        {
+            "id": "perf003",
+            "cliente": "Clínica Vida Plena",
+            "plataforma": "Google Ads",
+            "periodo": "2026-11",
+            "orcamento_teto": 2200,
+            "saldo_atual": 190,
+            "investido": 2150,
+            "leads_gerados": 52,
+            "vendas_fechadas": 14,
+            "receita_gerada": 9800,
+            "atualizado_em": "2026-11-15 16:45:00"
+        }
+    ],
+    "otimizacoes": [
+        {
+            "id": "opt001",
+            "cliente": "Mendes Auto Peças",
+            "plataforma": "Google Ads",
+            "acao": "Negativação de 18 termos de busca sem intenção comercial (\"peças usadas grátis\", \"curso mecânica\")",
+            "responsavel": "Ruben Massuquetto",
+            "criado_em": "2026-11-14 10:30:00"
+        },
+        {
+            "id": "opt002",
+            "cliente": "Mendes Auto Peças",
+            "plataforma": "Meta Ads",
+            "acao": "Troca de criativo estático por Reels demonstrativo — CPL caiu de R$ 31,00 para R$ 22,50",
+            "responsavel": "Rafael Torres",
+            "criado_em": "2026-11-15 14:15:00"
+        },
+        {
+            "id": "opt003",
+            "cliente": "Clínica Vida Plena",
+            "plataforma": "Google Ads",
+            "acao": "Alerta de saldo baixo enviado e ajuste de lance para horários comerciais (08h-19h)",
+            "responsavel": "Ruben Massuquetto",
+            "criado_em": "2026-11-15 16:50:00"
+        }
+    ],
+    "servicos_config": {
+        "Sites & Landing Pages": {
+            "modelo_cobranca": "Setup Único",
+            "preco_base": 3200,
+            "custo_freelancer": 1100,
+            "prazo_dias": 15,
+            "status_oferta": "Ativo para Venda"
+        },
+        "Gestão de Tráfego Pago": {
+            "modelo_cobranca": "Mensalidade Recorrente",
+            "preco_base": 2500,
+            "custo_freelancer": 800,
+            "prazo_dias": 7,
+            "status_oferta": "Ativo para Venda"
+        },
+        "SEO Local \/ GMN": {
+            "modelo_cobranca": "Mensalidade Recorrente",
+            "preco_base": 1800,
+            "custo_freelancer": 600,
+            "prazo_dias": 10,
+            "status_oferta": "Ativo para Venda"
+        },
+        "Branding & Visual": {
+            "modelo_cobranca": "Setup Único",
+            "preco_base": 4500,
+            "custo_freelancer": 1500,
+            "prazo_dias": 20,
+            "status_oferta": "Ativo para Venda"
+        },
+        "Social Media & Content": {
+            "modelo_cobranca": "Mensalidade Recorrente",
+            "preco_base": 1200,
+            "custo_freelancer": 400,
+            "prazo_dias": 7,
+            "status_oferta": "Ativo para Venda"
+        }
+    },
+    "admin_auth": {
+        "email": "rubenmassuquetto1999@gmail.com",
+        "senha": "123456"
+    }
+}
