@@ -189,7 +189,7 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
       </div>
       <div class="form-group">
         <label>PIN Secreto de Segurança</label>
-        <input type="password" name="pin" placeholder="•••• (Padrão: 1999)" required autocomplete="off">
+        <input type="password" name="pin" placeholder="••••" required autocomplete="off">
       </div>
       <button type="submit" class="btn-login">Verificar &amp; Redefinir Senha</button>
       <div class="login-links" style="margin-top:16px;justify-content:center;">
@@ -197,7 +197,7 @@ body{display:flex;min-height:100vh;background:#1E1E1E;color:#E8E8E8;}
       </div>
     </form>
     <div style="margin-top:14px;font-size:.78rem;color:#888;text-align:center;">
-      🔒 <em>Por segurança contra bloqueios de SMTP em nuvem, a recuperação utiliza PIN secreto master (Padrão: 1999).</em>
+      🔒 <em>Recuperação protegida por PIN secreto master exclusivo.</em>
     </div>
 
     <?php elseif($acao === 'redefinir'): ?>
